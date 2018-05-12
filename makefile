@@ -1,9 +1,12 @@
 # targets with no actual files
-.PHONY : install clean
+.PHONY : install build clean
 
 # names
 BINARY := stdkdf
 PREFIX := /usr/local
+
+# build alias
+build : $(BINARY)
 
 # build binary
 $(BINARY) :
