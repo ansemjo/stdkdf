@@ -1,5 +1,5 @@
 # targets with no actual files
-.PHONY : install test clean protobufs
+.PHONY : install clean
 
 # names
 BINARY := stdkdf
