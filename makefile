@@ -9,11 +9,11 @@ PREFIX := /usr/local
 build : $(BINARY)
 
 # build binary
-$(BINARY) :
+$(BINARY) : $(BINARY).go
 	# compile w/o debugging symbols
 	go build -ldflags="-s -w" -o "$@" "$@.go"
-	# compress with upx
-	upx stdkdf
+	# compress with upx, if it is present
+	command -v upx >/dev/null && upx stdkdf
 
 # install globally
 install : $(BINARY)
