@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
 
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/blake2b"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -40,7 +42,12 @@ func main() {
 	// derive key
 	key := argon2.Key(passwd, salt[:], time, memory, threads, length)
 
-	// output key in bytes (careful on terminals)
+	// encode in base64 if stdout is a tty
+	if terminal.IsTerminal(int(os.Stdout.Fd())) {
+		key = []byte(base64.StdEncoding.EncodeToString(key) + "\n")
+	}
+
+	// output key
 	_, err = os.Stdout.Write(key)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "couldn't write to stdout")
