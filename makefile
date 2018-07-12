@@ -8,8 +8,12 @@ PREFIX := /usr/local
 # build alias
 build : $(BINARY)
 
+# vendoring
+vendor :
+	dep ensure
+
 # build binary
-$(BINARY) : $(BINARY).go
+$(BINARY) : $(BINARY).go vendor
 	# compile w/o debugging symbols
 	go build -ldflags="-s -w" -o "$@" "$@.go"
 	# compress with upx, if it is present
@@ -21,4 +25,4 @@ install : $(BINARY)
 
 # clean anything not tracked by git
 clean :
-	git clean -fx
+	git clean -dfx
