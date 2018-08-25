@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,26 +12,55 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-const (
-	// argon2 settings
-	// https://tools.ietf.org/html/draft-irtf-cfrg-argon2-03#section-9.3
-	time    = 3
-	memory  = 32 * 1024
-	threads = 4
-	length  = 32
-)
+type cost struct {
+	time    uint32
+	memory  uint32
+	threads uint8
+	length  uint32
+}
+
+// argon2 cost settings [approx. benchmark on i5-5200U]
+var quick = cost{8, 8 * 1024, 1, 32}    // [79 msec]
+var normal = cost{16, 64 * 1024, 2, 32} // [650 msec]
+var hard = cost{32, 256 * 1024, 4, 32}  // [4 seconds]
+
+// commandline flags
+var costFlag = flag.String("cost", "normal", "cost setting: [quick|normal|hard]")
+var saltFlag = flag.String("salt", "", "salt string")
 
 func main() {
 
-	// check that exactly one argument is present
-	args := os.Args
-	if len(args) != 2 {
-		fmt.Fprintf(os.Stderr, "usage: $ printf password | %s saltstring\n", args[0])
+	flag.Parse()
+
+	// print usage
+	usage := func(err string) {
+		if err != "" {
+			fmt.Fprintln(os.Stderr, "ERR:", err)
+		}
+		flag.Usage()
 		os.Exit(1)
 	}
 
-	// hash the given string as salt
-	salt := blake2b.Sum256([]byte(args[1]))
+	// check that salt is given
+	if *saltFlag == "" {
+		usage("salt is required")
+	}
+
+	// check cost flag string
+	var cost cost
+	switch *costFlag {
+	case "normal":
+		cost = normal
+	case "quick":
+		cost = quick
+	case "hard":
+		cost = hard
+	default:
+		usage("unknown cost setting")
+	}
+
+	// hash the given string to bytes
+	salt := blake2b.Sum256([]byte(*saltFlag))
 
 	// read stdin as password
 	passwd, err := ioutil.ReadAll(os.Stdin)
@@ -40,7 +70,7 @@ func main() {
 	}
 
 	// derive key
-	key := argon2.Key(passwd, salt[:], time, memory, threads, length)
+	key := argon2.Key(passwd, salt[:], cost.time, cost.memory, cost.threads, cost.length)
 
 	// encode in base64 if stdout is a tty
 	if terminal.IsTerminal(int(os.Stdout.Fd())) {
