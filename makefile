@@ -3,7 +3,7 @@
 
 # build static binary w/o debugging symbols, Go 1.11+ required
 build : stdkdf
-stdkdf : stdkdf.go
+stdkdf : stdkdf.go go.mod go.sum
 	go build -ldflags="-s -w" -o $@ $<
 	command -v upx >/dev/null && upx stdkdf
 

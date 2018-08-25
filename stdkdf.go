@@ -25,8 +25,9 @@ var normal = cost{16, 64 * 1024, 2, 32} // [650 msec]
 var hard = cost{32, 256 * 1024, 4, 32}  // [4 seconds]
 
 // commandline flags
-var costFlag = flag.String("cost", "normal", "cost setting: [quick|normal|hard]")
-var saltFlag = flag.String("salt", "", "salt string")
+var costFlag = flag.String("cost", "normal", "cost setting: {quick|normal|hard}")
+var saltFlag = flag.String("salt", "", "salt string (required)")
+var rawFlag = flag.Bool("raw", false, "output raw bytes instead of base64")
 
 // stdin / stdout file descriptors for terminal checks
 var stdinFd = int(os.Stdin.Fd())
@@ -34,20 +35,24 @@ var stdoutFd = int(os.Stdout.Fd())
 
 func main() {
 
+	// parse flags
 	flag.Parse()
 
-	// print usage
-	usage := func(err string) {
-		if err != "" {
+	// check for error, print usage and exit
+	var err error
+	fatal := func(err error, usage bool) {
+		if err != nil {
 			fmt.Fprintln(os.Stderr, "ERR:", err)
+			if usage {
+				flag.Usage()
+			}
+			os.Exit(1)
 		}
-		flag.Usage()
-		os.Exit(1)
 	}
 
 	// check that salt is given
 	if *saltFlag == "" {
-		usage("salt is required")
+		fatal(fmt.Errorf("salt is required"), true)
 	}
 
 	// check cost flag string
@@ -60,7 +65,7 @@ func main() {
 	case "hard":
 		cost = hard
 	default:
-		usage("unknown cost setting")
+		fatal(fmt.Errorf("unknown cost setting"), true)
 	}
 
 	// hash the given string to bytes
@@ -68,7 +73,6 @@ func main() {
 
 	// read password
 	var passwd []byte
-	var err error
 	if terminal.IsTerminal(stdinFd) {
 		fmt.Fprint(os.Stderr, "Enter password: ")
 		passwd, err = terminal.ReadPassword(stdinFd)
@@ -76,10 +80,7 @@ func main() {
 	} else {
 		passwd, err = ioutil.ReadAll(os.Stdin)
 	}
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "ERR:", err)
-		os.Exit(2)
-	}
+	fatal(err, false)
 
 	// derive key
 	key := argon2.Key(passwd, salt[:], cost.time, cost.memory, cost.threads, cost.length)
@@ -87,11 +88,14 @@ func main() {
 	// encode in base64
 	encoding := base64.StdEncoding.EncodeToString(key)
 
-	// output to stdout, with newline if tty
-	if terminal.IsTerminal(stdoutFd) {
-		fmt.Println(encoding)
+	// output to stdout, raw if flag given, with newline if tty
+	if *rawFlag {
+		_, err = os.Stdout.Write(key)
+	} else if terminal.IsTerminal(stdoutFd) {
+		_, err = fmt.Println(encoding)
 	} else {
-		fmt.Print(encoding)
+		_, err = fmt.Print(encoding)
 	}
+	fatal(err, false)
 
 }
