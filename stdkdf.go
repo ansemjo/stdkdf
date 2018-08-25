@@ -28,6 +28,10 @@ var hard = cost{32, 256 * 1024, 4, 32}  // [4 seconds]
 var costFlag = flag.String("cost", "normal", "cost setting: [quick|normal|hard]")
 var saltFlag = flag.String("salt", "", "salt string")
 
+// stdin / stdout file descriptors for terminal checks
+var stdinFd = int(os.Stdin.Fd())
+var stdoutFd = int(os.Stdout.Fd())
+
 func main() {
 
 	flag.Parse()
@@ -62,10 +66,18 @@ func main() {
 	// hash the given string to bytes
 	salt := blake2b.Sum256([]byte(*saltFlag))
 
-	// read stdin as password
-	passwd, err := ioutil.ReadAll(os.Stdin)
+	// read password
+	var passwd []byte
+	var err error
+	if terminal.IsTerminal(stdinFd) {
+		fmt.Fprint(os.Stderr, "Enter password: ")
+		passwd, err = terminal.ReadPassword(stdinFd)
+		fmt.Fprint(os.Stderr, "\n")
+	} else {
+		passwd, err = ioutil.ReadAll(os.Stdin)
+	}
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "couldn't read stdin")
+		fmt.Fprintln(os.Stderr, "ERR:", err)
 		os.Exit(2)
 	}
 
@@ -75,8 +87,8 @@ func main() {
 	// encode in base64
 	encoding := base64.StdEncoding.EncodeToString(key)
 
-	// append newline if stdout is a tty
-	if terminal.IsTerminal(int(os.Stdout.Fd())) {
+	// output to stdout, with newline if tty
+	if terminal.IsTerminal(stdoutFd) {
 		fmt.Println(encoding)
 	} else {
 		fmt.Print(encoding)
