@@ -72,16 +72,14 @@ func main() {
 	// derive key
 	key := argon2.Key(passwd, salt[:], cost.time, cost.memory, cost.threads, cost.length)
 
-	// encode in base64 if stdout is a tty
-	if terminal.IsTerminal(int(os.Stdout.Fd())) {
-		key = []byte(base64.StdEncoding.EncodeToString(key) + "\n")
-	}
+	// encode in base64
+	encoding := base64.StdEncoding.EncodeToString(key)
 
-	// output key
-	_, err = os.Stdout.Write(key)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "couldn't write to stdout")
-		os.Exit(3)
+	// append newline if stdout is a tty
+	if terminal.IsTerminal(int(os.Stdout.Fd())) {
+		fmt.Println(encoding)
+	} else {
+		fmt.Print(encoding)
 	}
 
 }
