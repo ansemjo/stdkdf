@@ -59,8 +59,8 @@ func main() {
 
 	// print version
 	if *versionFlag {
-		fmt.Printf("stdkdf v%s (compiled with %s on %s/%s)\n",
-			version, runtime.Version(), runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("stdkdf v%s (%s/%s, runtime %s)\n",
+			version, runtime.GOOS, runtime.GOARCH, runtime.Version())
 		os.Exit(0)
 	}
 
