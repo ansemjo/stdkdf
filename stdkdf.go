@@ -16,7 +16,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-const version = "1.0.3"
+const version = "1.0.4"
 
 type cost struct {
 	time    uint32
@@ -34,6 +34,7 @@ var hard = cost{32, 256 * 1024, 4, 32}  // [4 seconds]
 var costFlag = flag.String("cost", "normal", "cost setting: {quick|normal|hard}")
 var saltFlag = flag.String("salt", "", "salt string (required)")
 var rawFlag = flag.Bool("raw", false, "output raw bytes instead of base64")
+var versionFlag = flag.Bool("version", false, "print version and exit")
 
 // stdin / stdout file descriptors for terminal checks
 var stdinFd = int(os.Stdin.Fd())
@@ -50,12 +51,17 @@ func main() {
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ERR:", err)
 			if usage {
-				fmt.Fprintf(os.Stderr, "stdkdf v%s (compiled with %s on %s/%s)\n",
-					version, runtime.Version(), runtime.GOOS, runtime.GOARCH)
 				flag.Usage()
 			}
 			os.Exit(1)
 		}
+	}
+
+	// print version
+	if *versionFlag {
+		fmt.Printf("stdkdf v%s (compiled with %s on %s/%s)\n",
+			version, runtime.Version(), runtime.GOOS, runtime.GOARCH)
+		os.Exit(0)
 	}
 
 	// check that salt is given
