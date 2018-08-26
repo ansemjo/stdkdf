@@ -20,7 +20,7 @@ type cost struct {
 }
 
 // argon2 cost settings [approx. benchmark on i5-5200U]
-var quick = cost{8, 8 * 1024, 1, 32}    // [79 msec]
+var quick = cost{8, 8 * 1024, 1, 32}    // [70 msec]
 var normal = cost{16, 64 * 1024, 2, 32} // [650 msec]
 var hard = cost{32, 256 * 1024, 4, 32}  // [4 seconds]
 
