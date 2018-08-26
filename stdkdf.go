@@ -9,11 +9,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/ssh/terminal"
 )
+
+const version = "1.0.3"
 
 type cost struct {
 	time    uint32
@@ -47,6 +50,8 @@ func main() {
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ERR:", err)
 			if usage {
+				fmt.Fprintf(os.Stderr, "stdkdf v%s (compiled with %s on %s/%s)\n",
+					version, runtime.Version(), runtime.GOOS, runtime.GOARCH)
 				flag.Usage()
 			}
 			os.Exit(1)
