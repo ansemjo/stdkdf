@@ -1,5 +1,5 @@
 # targets that are not actual files
-.PHONY : install build clean mkrelease-prepare mkrelease mkrelease-finish
+.PHONY : install build clean mkrelease-prepare mkrelease mkrelease-finish release
 
 # build static binary w/o debugging symbols, Go 1.11+ required
 build : stdkdf
@@ -20,8 +20,13 @@ clean :
 # makerelease targets for reproducible builds, ansemjo/makerelease
 mkrelease-prepare:
 	go mod download
+EXT := $(if $(findstring windows,$(OS)),.exe)
 mkrelease: stdkdf.go
-	GOOS=$(OS) GOARCH=$(ARCH) go build -ldflags="-s -w" -o $(RELEASEDIR)/stdkdf-$(OS)-$(ARCH) $<
+	GOOS=$(OS) GOARCH=$(ARCH) go build \
+		-ldflags="-s -w" -o $(RELEASEDIR)/stdkdf-$(OS)-$(ARCH)$(EXT) $<
 mkrelease-finish:
 	upx $(RELEASEDIR)/* || true
 	cd $(RELEASEDIR) && sha256sum * | tee sha256sums
+
+release:
+	tar c ./go.* ./makefile ./stdkdf.go | mkr rl
