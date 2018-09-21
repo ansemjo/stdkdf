@@ -27,7 +27,7 @@ mkrelease: stdkdf.go
 mkrelease-finish:
 	upx $(RELEASEDIR)/* || true
 	printf "# built with %s in %s\n" "$$MKR_VERSION" "$$MKR_IMAGE" > $(RELEASEDIR)/SHA256SUMS
-	cd $(RELEASEDIR) && sha256sum * | tee -e SHA256SUMS
+	cd $(RELEASEDIR) && sha256sum * | tee -a SHA256SUMS
 
 release:
 	git archive --prefix=./ HEAD | mkr rl
