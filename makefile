@@ -30,4 +30,4 @@ mkrelease-finish:
 	cd $(RELEASEDIR) && sha256sum * | tee -e SHA256SUMS
 
 release:
-	tar c ./go.* ./makefile ./stdkdf.go | mkr rl
+	git archive --prefix=./ HEAD | mkr rl
