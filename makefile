@@ -1,7 +1,7 @@
 # build static binary w/o debugging symbols, Go 1.11+ required
 .PHONY : build
 OUTPUT := stdkdf
-BUILDFLAGS := -ldflags '-s -w -d'
+BUILDFLAGS := -ldflags '-s -w -extldflags "-static"'
 build : $(OUTPUT)
 $(OUTPUT) : stdkdf.go go.mod go.sum
 	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build $(BUILDFLAGS) -o $(OUTPUT) $<
