@@ -1,33 +1,39 @@
-# targets that are not actual files
-.PHONY : install build clean mkrelease-prepare mkrelease mkrelease-finish release
-
 # build static binary w/o debugging symbols, Go 1.11+ required
-build : stdkdf
-stdkdf : stdkdf.go go.mod go.sum
-	go build -ldflags="-s -w" -o $@ $<
-	command -v upx >/dev/null && upx stdkdf
+.PHONY : build
+OUTPUT := stdkdf
+BUILDFLAGS := -ldflags '-s -w -d'
+build : $(OUTPUT)
+$(OUTPUT) : stdkdf.go go.mod go.sum
+	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build $(BUILDFLAGS) -o $(OUTPUT) $<
 
 # install built binary
+.PHONY : install
 PREFIX := $(shell [ $$(id -u) -eq 0 ] && echo /usr/local || echo ~/.local)
-install : stdkdf
+install : $(PREFIX)/bin/stdkdf
+$(PREFIX)/bin/stdkdf :
 	install -d $(PREFIX)/bin
 	install -m 755 $< $(PREFIX)/bin
 
 # clean anything not tracked by git
+.PHONY : clean
 clean :
 	git clean -dfx
 
-# makerelease targets for reproducible builds, ansemjo/makerelease
-mkrelease-prepare:
-	go mod download
-EXT := $(if $(findstring windows,$(OS)),.exe)
-mkrelease: stdkdf.go
-	GOOS=$(OS) GOARCH=$(ARCH) go build \
-		-ldflags="-s -w" -o $(RELEASEDIR)/stdkdf-$(OS)-$(ARCH)$(EXT) $<
-mkrelease-finish:
-	upx $(RELEASEDIR)/* || true
-	printf "# built with %s in %s\n" "$$MKR_VERSION" "$$MKR_IMAGE" > $(RELEASEDIR)/SHA256SUMS
-	cd $(RELEASEDIR) && sha256sum * | tee -a SHA256SUMS
-
-release:
+# cross-compile all binaries
+.PHONY : release
+release :
 	git archive --prefix=./ HEAD | mkr rl
+
+# makerelease targets for reproducible builds, ansemjo/makerelease
+.PHONY : mkrelease-prepare mkrelease mkrelease-finish
+mkrelease-prepare :
+	go mod download
+
+EXT := $(if $(findstring windows,$(OS)),.exe)
+mkrelease :
+	OUTPUT=$(RELEASEDIR)/$(OUTPUT)-$(OS)-$(ARCH)$(EXT) make build
+
+mkrelease-finish :
+	printf "# built with %s in %s\n" "$$MKR_VERSION" "$$MKR_IMAGE" > $(RELEASEDIR)/SHA256SUMS
+	cd $(RELEASEDIR) && sha256sum $(OUTPUT)-*-* | tee -a SHA256SUMS
+
