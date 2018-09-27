@@ -34,6 +34,7 @@ mkrelease :
 	OUTPUT=$(RELEASEDIR)/$(OUTPUT)-$(OS)-$(ARCH)$(EXT) make build
 
 mkrelease-finish :
+	upx -q $$(find $(RELEASEDIR)/* ! -name '*bsd-a*')
 	printf "# built with %s in %s\n" "$$MKR_VERSION" "$$MKR_IMAGE" > $(RELEASEDIR)/SHA256SUMS
 	cd $(RELEASEDIR) && sha256sum $(OUTPUT)-*-* | tee -a SHA256SUMS
 
