@@ -16,7 +16,8 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-const version = "1.0.4"
+var version = "1.0"
+var commit = "$Format:%h$"
 
 type cost struct {
 	time    uint32
@@ -59,8 +60,11 @@ func main() {
 
 	// print version
 	if *versionFlag {
-		fmt.Printf("stdkdf v%s (%s/%s, runtime %s)\n",
-			version, runtime.GOOS, runtime.GOARCH, runtime.Version())
+		if commit[1:8] == "Format:" {
+			commit = "development"
+		}
+		fmt.Printf("stdkdf v%s, %s (%s/%s, runtime %s)\n",
+			version, commit, runtime.GOOS, runtime.GOARCH, runtime.Version())
 		os.Exit(0)
 	}
 
