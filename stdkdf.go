@@ -60,7 +60,7 @@ func main() {
 
 	// print version
 	if *versionFlag {
-		if commit[1:8] == "Format:" {
+		if commit[:7] == "$Format" {
 			commit = "development"
 		}
 		fmt.Printf("stdkdf v%s, %s (%s/%s, runtime %s)\n",
