@@ -1,6 +1,6 @@
 module github.com/ansemjo/stdkdf
 
 require (
-	golang.org/x/crypto v0.0.0-20180621125126-a49355c7e3f8
-	golang.org/x/sys v0.0.0-20180709060233-1b2967e3c290 // indirect
+	golang.org/x/crypto v0.0.0-20181001203147-e3636079e1a4
+	golang.org/x/sys v0.0.0-20181005133103-4497e2df6f9e // indirect
 )
