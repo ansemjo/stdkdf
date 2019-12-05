@@ -19,17 +19,19 @@ import (
 var version = "1.0"
 var commit = "$Format:%h$"
 
-type cost struct {
-	time    uint32
-	memory  uint32
-	threads uint8
-	length  uint32
+type Cost struct {
+	Time    uint32
+	Memory  uint32
+	Threads uint8
+	Length  uint32
 }
 
 // argon2 cost settings [approx. benchmark on i5-5200U]
-var quick = cost{8, 8 * 1024, 1, 32}    // [70 msec]
-var normal = cost{16, 64 * 1024, 2, 32} // [650 msec]
-var hard = cost{32, 256 * 1024, 4, 32}  // [4 seconds]
+var (
+	QUICK  = Cost{8, 8 * 1024, 1, 32}    // [70 msec]
+	NORMAL = Cost{16, 64 * 1024, 2, 32}  // [650 msec]
+	HARD   = Cost{32, 256 * 1024, 4, 32} // [4 seconds]
+)
 
 // commandline flags
 var costFlag = flag.String("cost", "normal", "cost setting: {quick|normal|hard}")
@@ -74,20 +76,17 @@ func main() {
 	}
 
 	// check cost flag string
-	var cost cost
+	var cost Cost
 	switch *costFlag {
 	case "normal":
-		cost = normal
+		cost = NORMAL
 	case "quick":
-		cost = quick
+		cost = QUICK
 	case "hard":
-		cost = hard
+		cost = HARD
 	default:
 		fatal(fmt.Errorf("unknown cost setting"), true)
 	}
-
-	// hash the given string to bytes
-	salt := blake2b.Sum256([]byte(*saltFlag))
 
 	// read password
 	var passwd []byte
@@ -101,7 +100,7 @@ func main() {
 	fatal(err, false)
 
 	// derive key
-	key := argon2.Key(passwd, salt[:], cost.time, cost.memory, cost.threads, cost.length)
+	key := Stdkdf(passwd, []byte(*saltFlag), cost)
 
 	// encode in base64
 	encoding := base64.StdEncoding.EncodeToString(key)
@@ -116,4 +115,9 @@ func main() {
 	}
 	fatal(err, false)
 
+}
+
+func Stdkdf(password, salt []byte, costs Cost) (key []byte) {
+	hashedsalt := blake2b.Sum256(salt)
+	return argon2.Key(password, hashedsalt[:], costs.Time, costs.Memory, costs.Threads, costs.Length)
 }
