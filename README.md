@@ -34,7 +34,7 @@ instead of `printf` above yields a different key.
 
 You can choose different [cost settings](#cost-settings) using the `-cost` flag:
 
-    $ stdkdf -cost hard -salt helloreadme
+    $ stdkdf -cost high -salt helloreadme
     Enter password:
     MlKrXtvG+WJgQ79+XO4ulFzFnTv3EzCrV8lN6OrTDQA=
 
@@ -53,6 +53,6 @@ All settings output 32 byte hashes. The following cost settings are defined:
 
 | label  | time cost | memory cost | threads | approx duration on i5-5200U |
 | ------ | --------- | ----------- | ------- | --------------------------- |
-| quick  | 8         | 8 MB        | 1       | 70 msec                     |
+| low    | 8         | 8 MB        | 1       | 70 msec                     |
 | normal | 16        | 64 MB       | 2       | 650 msec                    |
-| hard   | 32        | 256 MB      | 4       | 4 seconds                   |
+| high   | 32        | 256 MB      | 4       | 4 seconds                   |

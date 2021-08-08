@@ -34,7 +34,7 @@ var (
 )
 
 // commandline flags
-var costFlag = flag.String("cost", "normal", "cost setting: {quick|normal|hard}")
+var costFlag = flag.String("cost", "normal", "cost setting: {low|normal|high}")
 var saltFlag = flag.String("salt", "", "salt string (required)")
 var rawFlag = flag.Bool("raw", false, "output raw bytes instead of base64")
 var versionFlag = flag.Bool("version", false, "print version and exit")
@@ -80,9 +80,9 @@ func main() {
 	switch *costFlag {
 	case "normal":
 		cost = NORMAL
-	case "quick":
+	case "quick", "low":
 		cost = QUICK
-	case "hard":
+	case "hard", "high":
 		cost = HARD
 	default:
 		fatal(fmt.Errorf("unknown cost setting"), true)
