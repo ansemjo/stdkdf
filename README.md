@@ -5,19 +5,16 @@ A simple binary to derive a key from a salt and a password on the commandline wi
 It uses a set of predefined options and only very few flags which makes it easy and quick to use.
 Output is either Base64 encoded or raw bytes.
 
-## install from source
+## install
 
-If you have `make` and `go` (min. version 1.11+ for modules support) installed, use the makefile
-targets. This will place the binary in either `~/.local/bin` or `/usr/local/bin` depending on wether
-you are root or not:
+Either simply use `go get`:
 
-    make build
-    make install
+    go get github.com/ansemjo/stdkdf
 
-If you have the `mkr` binary from `ansemjo/makerelease` installed, you can build a reproducible
-release:
+Or, if you have `make` installed, use the makefile to compile and install a smaller static binary:
 
-    make release
+    make static
+    sudo make install
 
 ## usage
 
@@ -35,7 +32,7 @@ For scripting purposes you can pipe the password on stdin:
 _Careful:_ when piping, trailing whitespace (e.g. a newline) is **not** stripped! Using `echo`
 instead of `printf` above yields a different key.
 
-You can choose a different [cost setting](#cost-settings) using the `-cost` flag:
+You can choose different [cost settings](#cost-settings) using the `-cost` flag:
 
     $ stdkdf -cost hard -salt helloreadme
     Enter password:
