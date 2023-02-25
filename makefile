@@ -13,3 +13,7 @@ $(PREFIX)/bin/stdkdf : stdkdf
 	install -d $(PREFIX)/bin
 	install -m 755 $< $(PREFIX)/bin
 
+# test some passwords
+.PHONY : test
+test : stdkdf
+	bash ./checkstrings.sh
